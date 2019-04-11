@@ -7,7 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 
-public class MasterServer implements Runnable{
+public class MasterServer extends Node implements Runnable{
     public static HashMap<Integer,Broker> Masterbrokers  = new HashMap<>(); // <BrokerID,Broker>
 
     public static void main(String args[]) {
@@ -50,11 +50,14 @@ public class MasterServer implements Runnable{
                         for (Integer brokerid: Masterbrokers.keySet()){
                             String key = brokerid.toString();
                             String address_and_ip = Masterbrokers.get(brokerid).getIPv4()+":"+Masterbrokers.get(brokerid).getPort();
-                            System.out.println("-->Broker"+key + ": " +address_and_ip+ " has been initiallized and running" );
+                            System.out.println("-->Broker"+key + ": " +address_and_ip+ " is running..." );
                         }
                     }else if (recievedObject instanceof String){
-                        System.out.println(recievedObject);
+                        if ( recievedObject.equals("alloc")){
+                            calculateKeys();
+                        }
                     }
+                    System.out.println("");
                 }catch (ClassNotFoundException e){
                     e.printStackTrace();
                 }
@@ -73,6 +76,34 @@ public class MasterServer implements Runnable{
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
+        }
+    }
+
+    public void calculateKeys() {
+        Reader.readFiles();
+        for (Topic topic : Reader.Topics) {
+            String hashedTopic = sha1(topic.getBusLine());
+            int counter = 0;
+            for (Integer brokerid : Masterbrokers.keySet()) {
+                counter++;
+                String address_and_ip = Masterbrokers.get(brokerid).getIPv4() + Masterbrokers.get(brokerid).getPort();
+                if (counter == Masterbrokers.size()) {
+                    Masterbrokers.get(brokerid).getResponsibilityLines().add(topic);
+                } else {
+                    if (hashedTopic.compareTo(address_and_ip) < 0) {
+                        Masterbrokers.get(1).getResponsibilityLines().add(topic);
+                        break;
+                    }
+                }
+            }
+        }
+        System.out.println("---STATUS INFO--- \'Allocation was successful!\'");
+        for (Integer brokerid : Masterbrokers.keySet()) {
+            System.out.print("Broker"+brokerid+":"+Masterbrokers.get(brokerid).getIPv4()+":"+Masterbrokers.get(brokerid).getPort()+" has: ");
+            for (Topic topic : Masterbrokers.get(brokerid).getResponsibilityLines()) {
+                System.out.print(topic.getBusLine()+" , ");
+            }
+            System.out.println("");
         }
     }
 

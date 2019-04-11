@@ -15,24 +15,18 @@ public class MasterServerCMD implements Runnable {
     }
 
 
-    public void startClient(int port) {
+    public void startClient(int port,String command) {
         Socket requestSocket = null;
         ObjectOutputStream out = null;
         ObjectInputStream in = null;
-        System.out.print("Give your command: ");
         try {
             requestSocket = new Socket(Reader.readBrokerIP(), port);
 
             out = new ObjectOutputStream(requestSocket.getOutputStream());
             in = new ObjectInputStream(requestSocket.getInputStream());
 
-            while (true){
-                Scanner scan= new Scanner(System.in);
-                String command= scan.nextLine();
-                if (command.toLowerCase()=="exit")
-                out.writeObject(command);
-                out.flush();
-            }
+            out.writeObject(command);
+            out.flush();
 
 
             //out.writeUnshared(new Message(101, "test data")); // Stelnei antikeimena, kaluterh apo writeObject
@@ -55,6 +49,13 @@ public class MasterServerCMD implements Runnable {
 
     @Override
     public void run() {
-        startClient(8085);
+        while (true){
+            System.out.print("Give your command: ");
+            Scanner scan= new Scanner(System.in);
+            String command= scan.nextLine();
+            if (command.toLowerCase()!="exit") {
+                startClient(8085,command);
+            }
+        }
     }
 }
