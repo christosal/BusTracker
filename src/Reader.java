@@ -7,7 +7,7 @@ public class Reader implements Runnable {
 
 
     public static String readBrokerIP(){
-        String file ="text\\Brokers_IP.txt";
+        String file ="text\\ServerIP.txt";
         String broker_ip=null;
         try{
             BufferedReader reader = new BufferedReader(new FileReader(file));
