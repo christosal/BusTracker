@@ -13,7 +13,7 @@ public class Node {
 
 
 
-    public void startClient(int port,Object object) {
+    /*public void startClient(int port,Object object) {
         Socket requestSocket = null;
         ObjectOutputStream out = null;
         ObjectInputStream in = null;
@@ -43,7 +43,7 @@ public class Node {
                 ioException.printStackTrace();
             }
         }
-    }
+    }*/
 
 
     /**
@@ -52,7 +52,7 @@ public class Node {
      * @param input String to hash
      * @return String hashed
      */
-    public String sha1(String input) {
+    public static String sha1(String input) {
         String sha1 = null;
         try {
             MessageDigest msdDigest = MessageDigest.getInstance("SHA-1");

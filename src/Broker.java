@@ -6,7 +6,9 @@ public class Broker extends Node implements Runnable,Serializable {
     private int port;
     private String IPv4;
     private int brokerID;
+    private boolean brokerIsRunning =false; //flag that indicates if a broker is running or not
     private ArrayList<Publisher> registeredPublishers = new ArrayList<>();
+    private ArrayList<Subscriber> registeredSubscribers = new ArrayList<>();
     private ArrayList<Topic> ResponsibilityLines = new ArrayList<>();
 
     public static void main(String args[]) {
@@ -34,45 +36,20 @@ public class Broker extends Node implements Runnable,Serializable {
 
     }
 
+    public Broker(){}
+
     public Broker(int port,int brokerID){
         this.port=port;
         this.brokerID=brokerID;
     }
 
-    public void calculateKeys(){
-        Reader.readFiles();
-        String broker_1_HashIP = sha1(local_brokers.get(1).getIPv4()+local_brokers.get(1).getPort());
-        String broker_2_HashIP = sha1(local_brokers.get(2).getIPv4()+local_brokers.get(2).getPort());
-        String broker_3_HashIP = sha1(local_brokers.get(3).getIPv4()+local_brokers.get(3).getPort());
-        for (Topic topic:Reader.Topics){
-            String hashedTopic = sha1(topic.getBusLine());
-            if (hashedTopic.compareTo(broker_1_HashIP)<0){
-                local_brokers.get(1).ResponsibilityLines.add(topic);
-            }else if(hashedTopic.compareTo(broker_2_HashIP)<0){
-                local_brokers.get(2).ResponsibilityLines.add(topic);
-            }else{
-                local_brokers.get(3).ResponsibilityLines.add(topic);
-            }
-        }
 
-        for (Topic topic:local_brokers.get(1).ResponsibilityLines){
-            System.out.print(topic.getBusLine()+",");
-        }
-        System.out.println("");
-        for (Topic topic:local_brokers.get(2).ResponsibilityLines){
-            System.out.print(topic.getBusLine()+",");
-        }
-        System.out.println("");
-        for (Topic topic:local_brokers.get(3).ResponsibilityLines){
-            System.out.print(topic.getBusLine()+",");
-        }
-    }
 
-    public void init(int serverPort,int numberOfBrokers) {
-        ServerSocket providerSocket=null;
-        Socket connection=null;
+    public void initBroker(int serverPort,int numberOfBrokers) {
+        ServerSocket brokerSocket=null;
         try{
-            providerSocket = new ServerSocket(serverPort);
+            brokerSocket = new ServerSocket(serverPort);
+            brokerIsRunning=true;
             DatagramSocket socket = new DatagramSocket();
             IPv4=InetAddress.getLocalHost().getHostAddress();
             System.out.println("Broker"+this.getBrokerID()+":"+ this.getIPv4() +":"+serverPort+" is listening...");
@@ -81,36 +58,18 @@ public class Broker extends Node implements Runnable,Serializable {
             flagForBrokers++;
             if (flagForBrokers==numberOfBrokers){
                 System.out.println("---STATUS INFO--- \"All Brokers of address \'"+ this.getIPv4()+"\' are running\"");
-                startClient(8085,local_brokers);
+                flagForBrokers=0;
+                connectToMasterServer(8085,local_brokers);
             }
-            while (true) {
-                connection = providerSocket.accept();
-
-                ObjectOutputStream out = new ObjectOutputStream(connection.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(connection.getInputStream());
-
-                System.out.println(in.readUTF());
-                //System.out.println((Message) in.readUnshared());
-                // System.out.println((Message) in.readObject());
-
-                in.close();
-                out.close();
-                connection.close();
+            while (brokerIsRunning) {
+                new ClientHandler(brokerSocket.accept(),this).start();
             }
         }catch (IOException ioException){
             ioException.printStackTrace();
-        }finally {
-            try {
-                DatagramSocket socket = new DatagramSocket();
-                providerSocket.close();
-                System.out.println("Server:"+socket.getLocalAddress()+":"+serverPort+" is listening..");
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
         }
     }
 
-    public void startClient(int port,Object object) {
+    public void connectToMasterServer(int port,Object object) {
         Socket requestSocket = null;
         ObjectOutputStream out = null;
         ObjectInputStream in = null;
@@ -143,9 +102,48 @@ public class Broker extends Node implements Runnable,Serializable {
     }
 
 
+    private static class ClientHandler  extends Thread {
+        private Socket clientSocket;
+        private Broker parentBroker;
+        private ObjectOutputStream out;
+        private ObjectInputStream in;
+        private boolean clientHandlerIsRunning =false; //flag that indicates if a handler for each connection is running or not
+
+        public ClientHandler(Socket socket,Broker parentBroker) {
+            this.clientSocket = socket;
+            this.parentBroker = parentBroker;
+        }
+
+        public void run() {
+            System.out.println("Broker:"+parentBroker.getBrokerID()+"--> A new Subscriber connected");
+            try {
+                out = new ObjectOutputStream(clientSocket.getOutputStream());
+                in = new ObjectInputStream(clientSocket.getInputStream());
+                while(clientHandlerIsRunning){
+
+                    Object recievedObject = in.readObject();
+
+                    if (recievedObject instanceof Subscriber){
+                        parentBroker.getRegisteredSubscribers().add((Subscriber) recievedObject);
+
+                    }
+                }
+                in.close();
+                out.close();
+                clientSocket.close();
+
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
     @Override
     public void run() {
-        this.init(port,3);
+        this.initBroker(port,3);
     }
 
 
@@ -163,12 +161,16 @@ public class Broker extends Node implements Runnable,Serializable {
         this.IPv4 = IPv4;
     }
 
-    public int getBrokerID() {
-        return brokerID;
-    }
-
     public ArrayList<Publisher> getRegisteredPublishers() {
         return registeredPublishers;
+    }
+
+    public ArrayList<Subscriber> getRegisteredSubscribers() {
+        return registeredSubscribers;
+    }
+
+    public int getBrokerID() {
+        return brokerID;
     }
 
     public ArrayList<Topic> getResponsibilityLines() {

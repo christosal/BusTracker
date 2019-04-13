@@ -1,6 +1,4 @@
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -28,43 +26,14 @@ public class MasterServer extends Node implements Runnable{
     }
 
 
-    public void initServer(int serverPort) {
-        ServerSocket providerSocket=null;
-        Socket connection=null;
+    public void initMasterServer(int serverPort) {
+        ServerSocket MasterServerSocket=null;
         try{
-            providerSocket = new ServerSocket(serverPort);
+            MasterServerSocket = new ServerSocket(serverPort);
             DatagramSocket socket = new DatagramSocket();
             System.out.println("MasterServer:"+ InetAddress.getLocalHost().getHostAddress() +":"+serverPort+" is up and running...");
             while (true) {
-                connection = providerSocket.accept();
-
-                ObjectOutputStream out = new ObjectOutputStream(connection.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(connection.getInputStream());
-
-                //System.out.println(in.readUTF());
-                //System.out.println((Message) in.readUnshared());
-                try{
-                    Object recievedObject = in.readObject();
-                    if (recievedObject instanceof HashMap){
-                        Masterbrokers.putAll((HashMap) recievedObject);
-                        for (Integer brokerid: Masterbrokers.keySet()){
-                            String key = brokerid.toString();
-                            String address_and_ip = Masterbrokers.get(brokerid).getIPv4()+":"+Masterbrokers.get(brokerid).getPort();
-                            System.out.println("-->Broker"+key + ": " +address_and_ip+ " is running..." );
-                        }
-                    }else if (recievedObject instanceof String){
-                        if ( recievedObject.equals("alloc")){
-                            calculateKeys();
-                        }
-                    }
-                    System.out.println("");
-                }catch (ClassNotFoundException e){
-                    e.printStackTrace();
-                }
-
-                in.close();
-                out.close();
-                connection.close();
+                new ClientHandler(MasterServerSocket.accept()).start();
             }
         }catch (IOException ioException){
             ioException.printStackTrace();
@@ -72,14 +41,59 @@ public class MasterServer extends Node implements Runnable{
             try {
                 DatagramSocket socket = new DatagramSocket();
                 System.out.println("MasterServer:"+socket.getLocalAddress()+":"+serverPort+" is down..");
-                providerSocket.close();
+                MasterServerSocket.close();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
         }
     }
 
-    public void calculateKeys() {
+    private static class ClientHandler extends Thread {
+        private Socket clientSocket;
+        private ObjectOutputStream out;
+        private ObjectInputStream in;
+
+        public ClientHandler(Socket socket) {
+            this.clientSocket = socket;
+        }
+
+        public void run() {
+
+            try {
+                out = new ObjectOutputStream(clientSocket.getOutputStream());
+                in = new ObjectInputStream(clientSocket.getInputStream());
+
+                Object recievedObject = in.readObject();
+                if (recievedObject instanceof HashMap) {
+                    Masterbrokers.putAll((HashMap) recievedObject);
+                    for (Integer brokerid : Masterbrokers.keySet()) {
+                        String key = brokerid.toString();
+                        String address_and_ip = Masterbrokers.get(brokerid).getIPv4() + ":" + Masterbrokers.get(brokerid).getPort();
+                        System.out.println("-->Broker" + key + ": " + address_and_ip + " is running...");
+                    }
+                } else if (recievedObject instanceof String) {
+                    if (recievedObject.equals("alloc")) {
+                        calculateKeys();
+                    } else if (recievedObject.equals("subscriber")) {
+                        out.writeObject(Masterbrokers);
+                        out.flush();
+                    }
+                }
+                System.out.println("");
+
+            in.close();
+            out.close();
+            clientSocket.close();
+
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void calculateKeys() {
         Reader.readFiles();
         for (Topic topic : Reader.Topics) {
             String hashedTopic = sha1(topic.getBusLine());
@@ -109,6 +123,6 @@ public class MasterServer extends Node implements Runnable{
 
     @Override
     public void run() {
-        initServer(8085);
+        initMasterServer(8085);
     }
 }

@@ -1,4 +1,6 @@
-public class Topic {
+import java.io.Serializable;
+
+public class Topic implements Serializable {
     private String busLine;
 
     public String getBusLine() {
