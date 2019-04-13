@@ -7,8 +7,8 @@ public class Broker extends Node implements Runnable,Serializable {
     private String IPv4;
     private int brokerID;
     private boolean brokerIsRunning =false; //flag that indicates if a broker is running or not
-    private ArrayList<Publisher> registeredPublishers = new ArrayList<>();
-    private ArrayList<Subscriber> registeredSubscribers = new ArrayList<>();
+    private HashMap<Integer,ClientHandler> registeredPublishers = new HashMap<>();
+    private HashMap<Integer,ClientHandler> registeredSubscribers = new HashMap<>();
     private ArrayList<Topic> ResponsibilityLines = new ArrayList<>();
 
     public static void main(String args[]) {
@@ -49,6 +49,7 @@ public class Broker extends Node implements Runnable,Serializable {
         ServerSocket brokerSocket=null;
         try{
             brokerSocket = new ServerSocket(serverPort);
+            Socket clientSocket;
             brokerIsRunning=true;
             DatagramSocket socket = new DatagramSocket();
             IPv4=InetAddress.getLocalHost().getHostAddress();
@@ -62,7 +63,16 @@ public class Broker extends Node implements Runnable,Serializable {
                 connectToMasterServer(8085,local_brokers);
             }
             while (brokerIsRunning) {
-                new ClientHandler(brokerSocket.accept(),this).start();
+                clientSocket = brokerSocket.accept();
+                System.out.println("Broker"+this.getBrokerID()+": "+this.getIPv4()+":"+this.getPort()+"---> New client request received : " + clientSocket);
+
+                ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+
+                System.out.println("Creating a new handler for a client...");
+
+                new Thread(new ClientHandler(clientSocket,this,in,out)).start();
+
             }
         }catch (IOException ioException){
             ioException.printStackTrace();
@@ -102,41 +112,61 @@ public class Broker extends Node implements Runnable,Serializable {
     }
 
 
-    private static class ClientHandler  extends Thread {
+    private static class ClientHandler  implements Runnable {
         private Socket clientSocket;
         private Broker parentBroker;
         private ObjectOutputStream out;
         private ObjectInputStream in;
+        private Subscriber myClientObject; //Stores a Publisher or a Subscriber object in order the ClientHandler to able to handle the connections
+        private int id;
         private boolean clientHandlerIsRunning =false; //flag that indicates if a handler for each connection is running or not
 
-        public ClientHandler(Socket socket,Broker parentBroker) {
+        public ClientHandler(Socket socket,Broker parentBroker,ObjectInputStream in,ObjectOutputStream out) {
             this.clientSocket = socket;
             this.parentBroker = parentBroker;
+            this.in=in;
+            this.out=out;
+            this.id++;
+            clientHandlerIsRunning=true;
         }
 
+
         public void run() {
-            System.out.println("Broker:"+parentBroker.getBrokerID()+"--> A new Subscriber connected");
-            try {
-                out = new ObjectOutputStream(clientSocket.getOutputStream());
-                in = new ObjectInputStream(clientSocket.getInputStream());
-                while(clientHandlerIsRunning){
 
+            while(clientHandlerIsRunning){
+                try {
                     Object recievedObject = in.readObject();
-
-                    if (recievedObject instanceof Subscriber){
-                        parentBroker.getRegisteredSubscribers().add((Subscriber) recievedObject);
-
+                    if (recievedObject instanceof Subscriber) {
+                        myClientObject= (Subscriber) recievedObject;
+                        parentBroker.getRegisteredSubscribers().put(this.id,this);
+                        System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A new subscriber with topic("+  myClientObject.getPreferedTopic().getBusLine()+") added to list");
+                    }else {
+                        System.out.println("Recieved smthng else");
+                    }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }catch (IOException e){
+                    for (Integer brokerid : parentBroker.getRegisteredSubscribers().keySet()) {
+                        if (parentBroker.getRegisteredSubscribers().get(brokerid).id==this.id){
+                            System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A subscriber with topic("+parentBroker.getRegisteredSubscribers().get(brokerid).myClientObject.getPreferedTopic().getBusLine()+") disconnected and removed from list");
+                            parentBroker.getRegisteredSubscribers().remove(brokerid);
+                            clientHandlerIsRunning=false;
+                            break;
+                        }
                     }
                 }
-                in.close();
-                out.close();
-                clientSocket.close();
 
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+
+            }
+
+            try{
+                this.in.close();
+                this.out.close();
+                clientSocket.close();
+            }catch (IOException e){
                 e.printStackTrace();
             }
+
         }
     }
 
@@ -161,11 +191,11 @@ public class Broker extends Node implements Runnable,Serializable {
         this.IPv4 = IPv4;
     }
 
-    public ArrayList<Publisher> getRegisteredPublishers() {
+    public HashMap<Integer,ClientHandler> getRegisteredPublishers() {
         return registeredPublishers;
     }
 
-    public ArrayList<Subscriber> getRegisteredSubscribers() {
+    public HashMap<Integer,ClientHandler> getRegisteredSubscribers() {
         return registeredSubscribers;
     }
 
