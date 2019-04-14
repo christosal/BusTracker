@@ -43,7 +43,12 @@ public class Broker extends Node implements Runnable,Serializable {
     }
 
 
-
+    /*
+    * Initializes each Broker.
+    * It also takes the number of Brokers (it can be replaced with a global counter* but its working ;) )
+    * For each new connection, a new Thread (ClientHandler) is created in order to serve each Client
+    *
+    * * */
     public void initBroker(int serverPort,int numberOfBrokers) {
         ServerSocket brokerSocket=null;
         try{
@@ -78,6 +83,11 @@ public class Broker extends Node implements Runnable,Serializable {
         }
     }
 
+
+    /*
+    * Connects to MasterServer in order to send him all the information
+    *
+    * */
     public void connectToMasterServer(int port,Object object) {
         Socket requestSocket = null;
         ObjectOutputStream out = null;
@@ -111,6 +121,12 @@ public class Broker extends Node implements Runnable,Serializable {
     }
 
 
+
+    /*
+    * Thread that executes on every new connection on the Broker
+    * It's responsible to keep the connection with the Subscribers and the Publishers (it receives a Value Object) until they finish
+    *
+    * */
     private static class ClientHandler  implements Runnable {
         private Socket clientSocket;
         private Broker parentBroker;

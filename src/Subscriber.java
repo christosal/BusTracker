@@ -24,7 +24,7 @@ public class Subscriber implements Runnable, Serializable {
         this.preferedTopic = topic;
     }
 
-
+    //Connects to the appropriate Broker and then starts listening for updates
     public void register(Broker broker, Topic topic){
         System.out.println("Connecting to Broker"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"...");
         Socket requestSocket = null;
@@ -58,8 +58,6 @@ public class Subscriber implements Runnable, Serializable {
                 e.printStackTrace();
             }
         }
-
-
         try {
             in.close();
             out.close();
@@ -71,14 +69,14 @@ public class Subscriber implements Runnable, Serializable {
 
     }
 
-    public void disconnect(Broker broker){
 
-    }
 
     public void visualizeData(Topic topic,Value value){
 
     }
 
+
+    //Connects to MasterServer in order to receive a list of all running brokers so to find the appropriate one
     public void connectToMasterServer(int port,String message) {
         Socket requestSocket = null;
         ObjectOutputStream out = null;
@@ -115,6 +113,10 @@ public class Subscriber implements Runnable, Serializable {
         }
     }
 
+    /*
+        Searching brokers list (taken through connectToMasterServer()) and returns the Broker who is responsible for
+        the preferedTopic
+    */
     private Broker findMyBroker(){
         for (Integer brokerid : brokers.keySet()) {
             for (Topic topic : brokers.get(brokerid).getResponsibilityLines()) {

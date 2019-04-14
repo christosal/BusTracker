@@ -77,6 +77,12 @@ public class Publisher implements Runnable, Serializable {
 
     }
 
+
+    /*
+    * Takes as inputs a Value Object which includes all the necessary information to be send
+    * It also take the ObjectOutputStream of the ClientHandler who is responsible for the connection of each Publisher
+    *
+    * */
     private void push(Value value,ObjectOutputStream out){
         try {
             out.writeObject(value);
@@ -86,6 +92,11 @@ public class Publisher implements Runnable, Serializable {
         }
     }
 
+
+    /*
+       Searching brokers list (taken through connectToMasterServer()) and returns the Broker who is responsible for
+       the preferedTopic
+   */
     private Broker findMyBroker(){
         for (Integer brokerid : brokers.keySet()) {
             for (Topic topic : brokers.get(brokerid).getResponsibilityLines()) {
