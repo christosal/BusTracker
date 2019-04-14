@@ -43,7 +43,7 @@ public class Publisher implements Runnable, Serializable {
 
                     synchronized (this){
                         try{
-                            wait(5000);
+                            wait(2000);
                         }catch (InterruptedException e){
                             e.printStackTrace();
                         }
@@ -51,24 +51,21 @@ public class Publisher implements Runnable, Serializable {
                 }
             }
 
-            out.writeObject(this);
+            out.writeObject(null);
             out.flush();
+
+            System.out.println("Transmition is done!");
 
         } catch (UnknownHostException unknownHost) {
             System.err.println("You are trying to connect to an unknown host!");
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
-        while (isRunning){
-            try{
-                in.readObject();
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
+
 
 
         try {
+
             in.close();
             out.close();
             //System.out.println("Disconnected");

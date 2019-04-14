@@ -51,6 +51,8 @@ public class Subscriber implements Runnable, Serializable {
                 Object recievedValue = in.readObject();
                 if (recievedValue instanceof Value){
                     System.out.println("Recieved from Broker"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"---> Lat:"+((Value) recievedValue).getLatitude()+" , Long:"+((Value) recievedValue).getLongitude());
+                }else if (recievedValue.equals("Stopped")){
+                    System.out.println("Recieved from Broker"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"---> Transmission stopped working ");
                 }
             }catch (Exception e){
                 e.printStackTrace();
