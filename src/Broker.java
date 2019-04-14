@@ -125,7 +125,7 @@ public class Broker extends Node implements Runnable,Serializable {
     /*
     * Thread that executes on every new connection on the Broker
     * It's responsible to keep the connection with the Subscribers and the Publishers (it receives a Value Object) until they finish
-    *
+    * It also handles force-stops of each connection -> EOFExceptions
     * */
     private static class ClientHandler  implements Runnable {
         private Socket clientSocket;
@@ -208,6 +208,10 @@ public class Broker extends Node implements Runnable,Serializable {
 
         }
 
+        /*
+        * Is responsible to forward to all subscribers values for the topic they are registered for
+        *
+        * */
         private synchronized void pull(Value value){
             for (Integer id:parentBroker.getRegisteredSubscribers().keySet()){
                 if (value.getBus().getBusLineId().equals(parentBroker.getRegisteredSubscribers().get(id).myClientSubscriber.getPreferedTopic().getBusLine())){

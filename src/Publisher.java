@@ -25,6 +25,7 @@ public class Publisher implements Runnable, Serializable {
         this.myBus=myBus;
     }
 
+    //Connects to its broker and simulates a real-time scenario every X sec to send values for a specific topic
     public void connectToBroker(Broker broker){
         System.out.println("Connecting to Broker"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"...");
         Socket requestSocket = null;
