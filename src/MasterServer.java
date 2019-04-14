@@ -74,7 +74,7 @@ public class MasterServer extends Node implements Runnable{
                 } else if (recievedObject instanceof String) {
                     if (recievedObject.equals("alloc")) {
                         calculateKeys();
-                    } else if (recievedObject.equals("subscriber")) {
+                    } else if (recievedObject.equals("connect")) {
                         out.writeObject(Masterbrokers);
                         out.flush();
                     }

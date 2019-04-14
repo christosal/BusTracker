@@ -1,4 +1,6 @@
-public class Value {
+import java.io.Serializable;
+
+public class Value implements Serializable {
     private Bus bus;
     private double latitude,longitude;
 

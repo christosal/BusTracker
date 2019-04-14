@@ -6,23 +6,17 @@ import java.util.HashMap;
 public class Subscriber implements Runnable, Serializable {
 
     public  HashMap<Integer,Broker> brokers  = new HashMap<>(); // <BrokerID,Broker>
-    private Topic preferedTopic;//= new Topic("022");
+    private Topic preferedTopic;
     private boolean isRunning = false;
 
     public static void main(String args[]){
-        Subscriber subscriber1=new Subscriber(new Topic("022"));
+        //Subscriber subscriber1=new Subscriber(new Topic("022"));
         Subscriber subscriber2=new Subscriber(new Topic("021"));
-        Thread t1=new Thread(subscriber1);
+        //Thread t1=new Thread(subscriber1);
         Thread t2=new Thread(subscriber2);
-        t1.start();
+        //t1.start();
         t2.start();
 
-        try{
-            t1.join();
-            t2.join();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
 
     }
 
@@ -54,7 +48,10 @@ public class Subscriber implements Runnable, Serializable {
         }
         while (isRunning){
             try{
-                in.readObject();
+                Object recievedValue = in.readObject();
+                if (recievedValue instanceof Value){
+                    System.out.println("Recieved from Broker"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"---> Lat:"+((Value) recievedValue).getLatitude()+" , Long:"+((Value) recievedValue).getLongitude());
+                }
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -129,7 +126,7 @@ public class Subscriber implements Runnable, Serializable {
 
     @Override
     public void run() {
-        connectToMasterServer(8085,"subscriber");
+        connectToMasterServer(8085,"connect");
         if (brokers.size()==0){
             System.out.println("No brokers are running");
         }else{

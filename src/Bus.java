@@ -1,13 +1,13 @@
-public class Bus {
-    private String lineNumber,routeCode,vechicleId,lineName,busLineId,info;
+import java.io.Serializable;
 
-    public Bus(String lineNumber, String routeCode, String vechicleId, String linaName, String busLineId, String info) {
+public class Bus implements Serializable {
+    private String lineNumber,routeCode,vechicleId,busLineId;
+
+    public Bus(String lineNumber, String routeCode, String vechicleId, String busLineId) {
         this.lineNumber = lineNumber;
         this.routeCode = routeCode;
         this.vechicleId = vechicleId;
-        this.lineName = linaName;
         this.busLineId = busLineId;
-        this.info = info;
     }
 
     public String getLineNumber() {
@@ -34,14 +34,6 @@ public class Bus {
         this.vechicleId = vechicleId;
     }
 
-    public String getLineName() {
-        return lineName;
-    }
-
-    public void setLineName(String linaName) {
-        this.lineName = linaName;
-    }
-
     public String getBusLineId() {
         return busLineId;
     }
@@ -50,11 +42,4 @@ public class Bus {
         this.busLineId = busLineId;
     }
 
-    public String getInfo() {
-        return info;
-    }
-
-    public void setInfo(String info) {
-        this.info = info;
-    }
 }
