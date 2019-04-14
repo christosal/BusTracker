@@ -49,6 +49,7 @@ public class MasterServerCMD implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("//Type these commands \n\'alloc\': When all brokers are up, MasterServer allocates all Topics (sha1 hashing) to each broker \n");
         while (true){
             System.out.print("Give your command: ");
             Scanner scan= new Scanner(System.in);
