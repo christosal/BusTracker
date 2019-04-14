@@ -15,20 +15,19 @@ public class Broker extends Node implements Runnable,Serializable {
 
             Broker broker1 = new Broker(8080,1);
             Broker broker2 = new Broker(8083,2);
-            Broker broker3 = new Broker(3001,3);
+
 
             Thread t1 = new Thread(broker1);
             Thread t2 = new Thread(broker2);
-            Thread t3 = new Thread(broker3);
+
 
             t1.start();
             t2.start();
-            t3.start();
+
 
             try {
                 t1.join();
                 t2.join();
-                t3.join();
             } catch (Exception e) {
                 System.out.println("Threads Interrupted");
             }
@@ -119,7 +118,7 @@ public class Broker extends Node implements Runnable,Serializable {
         private ObjectInputStream in;
         private Subscriber myClientSubscriber=null; //Stores a Subscriber object in order the ClientHandler to be able to handle the connections
         private Value myClientValue=null; //Stores a Value object in order the ClientHandler to be able to handle the connections
-        private int id;
+        private static int id;
         private boolean clientHandlerIsRunning =false; //flag that indicates if a handler for each connection is running or not
 
         public ClientHandler(Socket socket,Broker parentBroker,ObjectInputStream in,ObjectOutputStream out) {
@@ -139,12 +138,12 @@ public class Broker extends Node implements Runnable,Serializable {
                     if (recievedObject instanceof Subscriber) {
                         myClientSubscriber= (Subscriber) recievedObject;
                         parentBroker.getRegisteredSubscribers().put(this.id,this);
-                        System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A new subscriber with topic("+  myClientSubscriber.getPreferedTopic().getBusLine()+") added to list");
+                        System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A new subscriber (#"+this.id+") with topic("+  myClientSubscriber.getPreferedTopic().getBusLine()+") added to list");
                     }else if (recievedObject instanceof Value){
                         myClientValue = (Value) recievedObject;
                         if (!checkIfExistsInPubs(this.id)){
                             parentBroker.getRegisteredPublishers().put(this.id,this);
-                            System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A new publisher with vechicleID("+myClientValue.getBus().getVechicleId() +") and topic("+  myClientValue.getBus().getBusLineId()+") added to list");
+                            System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A new publisher (#"+this.id+") with vechicleID("+myClientValue.getBus().getVechicleId() +") and topic("+  myClientValue.getBus().getBusLineId()+") added to list");
                         }
                         pull(myClientValue);
                     }else if(recievedObject==null){
@@ -233,7 +232,7 @@ public class Broker extends Node implements Runnable,Serializable {
 
     @Override
     public void run() {
-        this.initBroker(port,3);
+        this.initBroker(port,2);
     }
 
 

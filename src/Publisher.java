@@ -14,7 +14,8 @@ public class Publisher implements Runnable, Serializable {
 
     public static void main(String args[]){
         Reader.readFiles();
-        Publisher pub1 = new Publisher(new Bus("1151","2484","10389","021"));
+        //Publisher pub1 = new Publisher(new Bus("1151","2484","10389","021"));
+        Publisher pub1 = new Publisher(new Bus("821","1804","10007","022"));
 
         Thread t1 = new Thread(pub1);
         t1.start();
