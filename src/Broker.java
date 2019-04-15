@@ -33,7 +33,12 @@ public class Broker extends Node implements Runnable,Serializable {
             }
 
 
+
+
     }
+
+
+
 
     public Broker(){}
 
@@ -56,7 +61,7 @@ public class Broker extends Node implements Runnable,Serializable {
             Socket clientSocket;
             brokerIsRunning=true;
             DatagramSocket socket = new DatagramSocket();
-            IPv4=InetAddress.getLocalHost().getHostAddress();
+            IPv4=getLocalIP();
             System.out.println("Broker"+this.getBrokerID()+":"+ this.getIPv4() +":"+serverPort+" is listening...");
             //Adds broker to brokers List
             local_brokers.put(this.getBrokerID(),this);

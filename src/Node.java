@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.security.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.logging.*;
 import javax.xml.bind.DatatypeConverter;
@@ -45,6 +46,26 @@ public class Node {
         }
     }*/
 
+    public static String getLocalIP(){
+        InetAddress i=null;
+        try{
+            Enumeration e = NetworkInterface.getNetworkInterfaces();
+            while(e.hasMoreElements())
+            {
+                NetworkInterface n = (NetworkInterface) e.nextElement();
+                Enumeration ee = n.getInetAddresses();
+
+                while (ee.hasMoreElements())
+                {
+                    i = (InetAddress) ee.nextElement();
+                }
+            }
+
+        }catch (Exception e){
+
+        }
+        return i.getHostAddress();
+    }
 
     /**
      * Hashing with SHA1
