@@ -11,7 +11,7 @@ public class Subscriber implements Runnable, Serializable {
 
     public static void main(String args[]){
         //Subscriber subscriber1=new Subscriber(new Topic("022"));
-        Subscriber subscriber2=new Subscriber(new Topic("022"));
+        Subscriber subscriber2=new Subscriber(new Topic("026"));
         //Thread t1=new Thread(subscriber1);
         Thread t2=new Thread(subscriber2);
         //t1.start();

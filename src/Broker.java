@@ -6,6 +6,7 @@ public class Broker extends Node implements Runnable,Serializable {
     private int port;
     private String IPv4;
     private int brokerID;
+    private static String numberOfBrokers;
     private boolean brokerIsRunning =false; //flag that indicates if a broker is running or not
     private HashMap<Integer,ClientHandler> registeredPublishers = new HashMap<>();
     private HashMap<Integer,ClientHandler> registeredSubscribers = new HashMap<>();
@@ -13,24 +14,33 @@ public class Broker extends Node implements Runnable,Serializable {
 
     public static void main(String args[]) {
 
-            Broker broker1 = new Broker(8080,1);
-            Broker broker2 = new Broker(8083,2);
-
-
-            Thread t1 = new Thread(broker1);
-            Thread t2 = new Thread(broker2);
-
-
-            t1.start();
-            t2.start();
-
-
-            try {
-                t1.join();
-                t2.join();
-            } catch (Exception e) {
-                System.out.println("Threads Interrupted");
+        System.out.println("Give number of brokers");
+            Scanner scan= new Scanner(System.in);
+            numberOfBrokers = scan.nextLine();
+            for (int i =0; i<Integer.parseInt(numberOfBrokers);i++){
+                Broker broker = new Broker(findFreePort(),i);
+                Thread t = new Thread(broker);
+                t.start();
             }
+
+            //Broker broker1 = new Broker(8080,1);
+            //Broker broker2 = new Broker(8083,2);
+
+
+            //Thread t1 = new Thread(broker1);
+            //Thread t2 = new Thread(broker2);
+
+
+           // t1.start();
+           // t2.start();
+
+
+            //try {
+            //    t1.join();
+            //    t2.join();
+           // } catch (Exception e) {
+            //    System.out.println("Threads Interrupted");
+           // }
 
 
 
@@ -258,7 +268,7 @@ public class Broker extends Node implements Runnable,Serializable {
 
     @Override
     public void run() {
-        this.initBroker(port,2);
+        this.initBroker(port,Integer.parseInt(numberOfBrokers));
     }
 
 

@@ -31,7 +31,7 @@ public class MasterServer extends Node implements Runnable{
         try{
             MasterServerSocket = new ServerSocket(serverPort);
             DatagramSocket socket = new DatagramSocket();
-            System.out.println("MasterServer:"+ InetAddress.getLocalHost().getHostAddress() +":"+serverPort+" is up and running...");
+            System.out.println("MasterServer:"+ getLocalIP() +":"+serverPort+" is up and running...");
             while (true) {
                 new ClientHandler(MasterServerSocket.accept()).start();
             }
