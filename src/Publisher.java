@@ -9,7 +9,7 @@ import java.util.HashMap;
 public class Publisher implements Runnable, Serializable {
 
     private Bus myBus;
-    public HashMap<Integer,Broker> brokers  = new HashMap<>(); // <BrokerID,Broker>
+    public HashMap<Integer, Broker1> brokers  = new HashMap<>(); // <BrokerID,Broker1>
     private boolean isRunning=false;
 
     public static void main(String args[]){
@@ -26,8 +26,8 @@ public class Publisher implements Runnable, Serializable {
     }
 
     //Connects to its broker and simulates a real-time scenario every X sec to send values for a specific topic
-    public void connectToBroker(Broker broker){
-        System.out.println("Connecting to Broker"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"...");
+    public void connectToBroker(Broker1 broker){
+        System.out.println("Connecting to Broker1"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"...");
         Socket requestSocket = null;
         ObjectOutputStream out = null;
         ObjectInputStream in = null;
@@ -95,10 +95,10 @@ public class Publisher implements Runnable, Serializable {
 
 
     /*
-       Searching brokers list (taken through connectToMasterServer()) and returns the Broker who is responsible for
+       Searching brokers list (taken through connectToMasterServer()) and returns the Broker1 who is responsible for
        the preferedTopic
    */
-    private Broker findMyBroker(){
+    private Broker1 findMyBroker(){
         for (Integer brokerid : brokers.keySet()) {
             for (Topic topic : brokers.get(brokerid).getResponsibilityLines()) {
                 if (topic.getBusLine().equals(myBus.getBusLineId())){
@@ -124,7 +124,7 @@ public class Publisher implements Runnable, Serializable {
             out.flush();
 
             try{
-                brokers = (HashMap<Integer, Broker>) in.readObject();
+                brokers = (HashMap<Integer, Broker1>) in.readObject();
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -151,12 +151,12 @@ public class Publisher implements Runnable, Serializable {
         if (brokers.size()==0){
             System.out.println("No brokers are running");
         }else{
-            Broker myBroker = findMyBroker();
+            Broker1 myBroker = findMyBroker();
             if (myBroker==null){
-                System.out.println("No Broker is responsible for Topic:"+myBus.getBusLineId());
+                System.out.println("No Broker1 is responsible for Topic:"+myBus.getBusLineId());
             }else {
                 for (Integer brokerid : brokers.keySet()) {
-                    System.out.print("Broker"+brokerid+":"+brokers.get(brokerid).getIPv4()+":"+brokers.get(brokerid).getPort()+" has: ");
+                    System.out.print("Broker1"+brokerid+":"+brokers.get(brokerid).getIPv4()+":"+brokers.get(brokerid).getPort()+" has: ");
                     for (Topic topic : brokers.get(brokerid).getResponsibilityLines()) {
                         System.out.print(topic.getBusLine()+" , ");
                     }

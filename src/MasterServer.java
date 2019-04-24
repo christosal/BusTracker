@@ -1,12 +1,11 @@
 import java.io.*;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 
 public class MasterServer extends Node implements Runnable{
-    public static HashMap<Integer,Broker> Masterbrokers  = new HashMap<>(); // <BrokerID,Broker>
+    public static HashMap<Integer, Broker1> Masterbrokers  = new HashMap<>(); // <BrokerID,Broker1>
 
     public static void main(String args[]) {
 
@@ -69,7 +68,7 @@ public class MasterServer extends Node implements Runnable{
                     for (Integer brokerid : Masterbrokers.keySet()) {
                         String key = brokerid.toString();
                         String address_and_ip = Masterbrokers.get(brokerid).getIPv4() + ":" + Masterbrokers.get(brokerid).getPort();
-                        System.out.println("-->Broker" + key + ": " + address_and_ip + " is running...");
+                        System.out.println("-->Broker1" + key + ": " + address_and_ip + " is running...");
                     }
                 } else if (recievedObject instanceof String) {
                     if (recievedObject.equals("alloc")) {
@@ -114,7 +113,7 @@ public class MasterServer extends Node implements Runnable{
         }
         System.out.println("---STATUS INFO--- \'Allocation was successful!\'");
         for (Integer brokerid : Masterbrokers.keySet()) {
-            System.out.print("Broker"+brokerid+":"+Masterbrokers.get(brokerid).getIPv4()+":"+Masterbrokers.get(brokerid).getPort()+" has: ");
+            System.out.print("Broker1"+brokerid+":"+Masterbrokers.get(brokerid).getIPv4()+":"+Masterbrokers.get(brokerid).getPort()+" has: ");
             for (Topic topic : Masterbrokers.get(brokerid).getResponsibilityLines()) {
                 System.out.print(topic.getBusLine()+" , ");
             }

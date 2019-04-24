@@ -5,12 +5,11 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Scanner;
-import java.util.logging.*;
 import javax.xml.bind.DatatypeConverter;
 
 public class Node {
 
-    public static HashMap<Integer,Broker> local_brokers  = new HashMap<>(); // <BrokerID,Broker>
+    public static HashMap<Integer, Broker1> local_brokers  = new HashMap<>(); // <BrokerID,Broker1>
     public static int flagForBrokers = 0; //Flag to know when all brokers are running
     public static String MACHINE_IP = null;
 

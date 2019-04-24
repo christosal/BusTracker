@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 public class Subscriber implements Runnable, Serializable {
 
-    public  HashMap<Integer,Broker> brokers  = new HashMap<>(); // <BrokerID,Broker>
+    public  HashMap<Integer, Broker1> brokers  = new HashMap<>(); // <BrokerID,Broker1>
     private Topic preferedTopic;
     private boolean isRunning = false;
 
@@ -24,9 +24,9 @@ public class Subscriber implements Runnable, Serializable {
         this.preferedTopic = topic;
     }
 
-    //Connects to the appropriate Broker and then starts listening for updates
-    public void register(Broker broker, Topic topic){
-        System.out.println("Connecting to Broker"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"...");
+    //Connects to the appropriate Broker1 and then starts listening for updates
+    public void register(Broker1 broker, Topic topic){
+        System.out.println("Connecting to Broker1"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"...");
         Socket requestSocket = null;
         ObjectOutputStream out = null;
         ObjectInputStream in = null;
@@ -50,9 +50,9 @@ public class Subscriber implements Runnable, Serializable {
             try{
                 Object recievedValue = in.readObject();
                 if (recievedValue instanceof Value){
-                    System.out.println("Recieved from Broker"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"---> Lat:"+((Value) recievedValue).getLatitude()+" , Long:"+((Value) recievedValue).getLongitude());
+                    System.out.println("Recieved from Broker1"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"---> Lat:"+((Value) recievedValue).getLatitude()+" , Long:"+((Value) recievedValue).getLongitude());
                 }else if (recievedValue.equals("Stopped")){
-                    System.out.println("Recieved from Broker"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"---> Transmission stopped working ");
+                    System.out.println("Recieved from Broker1"+broker.getBrokerID()+": "+broker.getIPv4()+":"+broker.getPort()+"---> Transmission stopped working ");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -92,7 +92,7 @@ public class Subscriber implements Runnable, Serializable {
             out.flush();
 
             try{
-                brokers = (HashMap<Integer, Broker>) in.readObject();
+                brokers = (HashMap<Integer, Broker1>) in.readObject();
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -114,10 +114,10 @@ public class Subscriber implements Runnable, Serializable {
     }
 
     /*
-        Searching brokers list (taken through connectToMasterServer()) and returns the Broker who is responsible for
+        Searching brokers list (taken through connectToMasterServer()) and returns the Broker1 who is responsible for
         the preferedTopic
     */
-    private Broker findMyBroker(){
+    private Broker1 findMyBroker(){
         for (Integer brokerid : brokers.keySet()) {
             for (Topic topic : brokers.get(brokerid).getResponsibilityLines()) {
                 if (topic.getBusLine().equals(preferedTopic.getBusLine())){
@@ -134,12 +134,12 @@ public class Subscriber implements Runnable, Serializable {
         if (brokers.size()==0){
             System.out.println("No brokers are running");
         }else{
-            Broker myBroker = findMyBroker();
+            Broker1 myBroker = findMyBroker();
             if (myBroker==null){
-                System.out.println("No Broker is responsible for Topic:"+preferedTopic.getBusLine());
+                System.out.println("No Broker1 is responsible for Topic:"+preferedTopic.getBusLine());
             }else {
                 for (Integer brokerid : brokers.keySet()) {
-                    System.out.print("Broker"+brokerid+":"+brokers.get(brokerid).getIPv4()+":"+brokers.get(brokerid).getPort()+" has: ");
+                    System.out.print("Broker1"+brokerid+":"+brokers.get(brokerid).getIPv4()+":"+brokers.get(brokerid).getPort()+" has: ");
                     for (Topic topic : brokers.get(brokerid).getResponsibilityLines()) {
                         System.out.print(topic.getBusLine()+" , ");
                     }
