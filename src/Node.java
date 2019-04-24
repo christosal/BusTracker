@@ -4,6 +4,7 @@ import java.security.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Scanner;
 import java.util.logging.*;
 import javax.xml.bind.DatatypeConverter;
 
@@ -11,7 +12,7 @@ public class Node {
 
     public static HashMap<Integer,Broker> local_brokers  = new HashMap<>(); // <BrokerID,Broker>
     public static int flagForBrokers = 0; //Flag to know when all brokers are running
-
+    public static String MACHINE_IP = null;
 
 
     /*public void startClient(int port,Object object) {
@@ -79,8 +80,9 @@ public class Node {
     }
 
 
-    public static String getLocalIP(){
-        InetAddress i=null;
+    public static void setLocalIP(){
+
+        ArrayList<InetAddress> addresses = new ArrayList<>();
         try{
             Enumeration e = NetworkInterface.getNetworkInterfaces();
             while(e.hasMoreElements())
@@ -90,14 +92,23 @@ public class Node {
 
                 while (ee.hasMoreElements())
                 {
-                    i = (InetAddress) ee.nextElement();
+                    addresses.add((InetAddress) ee.nextElement());
                 }
             }
 
         }catch (Exception e){
 
         }
-        return i.getHostAddress();
+        int counter=1;
+        System.out.println("Please choose the correct ip addresses of the below network interfaces:");
+        for (InetAddress a:addresses){
+            System.out.println(counter+") "+a);
+            counter++;
+        }
+        System.out.print("Choose a number: ");
+        Scanner scan= new Scanner(System.in);
+        String choosenNumber = scan.nextLine();
+        MACHINE_IP = addresses.get(Integer.parseInt(choosenNumber)-1).getHostAddress();
     }
 
     /**

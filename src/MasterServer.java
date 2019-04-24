@@ -30,8 +30,8 @@ public class MasterServer extends Node implements Runnable{
         ServerSocket MasterServerSocket=null;
         try{
             MasterServerSocket = new ServerSocket(serverPort);
-            DatagramSocket socket = new DatagramSocket();
-            System.out.println("MasterServer:"+ getLocalIP() +":"+serverPort+" is up and running...");
+            setLocalIP();
+            System.out.println("MasterServer:"+ MACHINE_IP +":"+serverPort+" is up and running...");
             while (true) {
                 new ClientHandler(MasterServerSocket.accept()).start();
             }
@@ -62,7 +62,7 @@ public class MasterServer extends Node implements Runnable{
             try {
                 out = new ObjectOutputStream(clientSocket.getOutputStream());
                 in = new ObjectInputStream(clientSocket.getInputStream());
-
+                System.out.println(clientSocket);
                 Object recievedObject = in.readObject();
                 if (recievedObject instanceof HashMap) {
                     Masterbrokers.putAll((HashMap) recievedObject);
@@ -75,6 +75,7 @@ public class MasterServer extends Node implements Runnable{
                     if (recievedObject.equals("alloc")) {
                         calculateKeys();
                     } else if (recievedObject.equals("connect")) {
+                        System.out.println(Masterbrokers.size());
                         out.writeObject(Masterbrokers);
                         out.flush();
                     }

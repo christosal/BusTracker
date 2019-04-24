@@ -14,7 +14,8 @@ public class Broker extends Node implements Runnable,Serializable {
 
     public static void main(String args[]) {
 
-        System.out.println("Give number of brokers");
+        setLocalIP();
+        System.out.print("Give number of brokers:");
             Scanner scan= new Scanner(System.in);
             numberOfBrokers = scan.nextLine();
             for (int i =0; i<Integer.parseInt(numberOfBrokers);i++){
@@ -71,7 +72,7 @@ public class Broker extends Node implements Runnable,Serializable {
             Socket clientSocket;
             brokerIsRunning=true;
             DatagramSocket socket = new DatagramSocket();
-            IPv4=getLocalIP();
+            IPv4=MACHINE_IP;
             System.out.println("Broker"+this.getBrokerID()+":"+ this.getIPv4() +":"+serverPort+" is listening...");
             //Adds broker to brokers List
             local_brokers.put(this.getBrokerID(),this);
