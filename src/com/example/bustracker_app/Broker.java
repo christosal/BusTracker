@@ -1,8 +1,10 @@
+package com.example.bustracker_app;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class Broker1 extends Node implements Runnable,Serializable {
+public class Broker extends Node implements Runnable,Serializable {
     private int port;
     private String IPv4;
     private int brokerID;
@@ -11,6 +13,7 @@ public class Broker1 extends Node implements Runnable,Serializable {
     private HashMap<Integer,ClientHandler> registeredPublishers = new HashMap<>();
     private HashMap<Integer,ClientHandler> registeredSubscribers = new HashMap<>();
     private ArrayList<Topic> ResponsibilityLines = new ArrayList<>();
+    public static final long serialVersionUID = 22149313046710534L;
 
     public static void main(String args[]) {
 
@@ -19,13 +22,13 @@ public class Broker1 extends Node implements Runnable,Serializable {
             Scanner scan= new Scanner(System.in);
             numberOfBrokers = scan.nextLine();
             for (int i =0; i<Integer.parseInt(numberOfBrokers);i++){
-                Broker1 broker = new Broker1(findFreePort(),i);
+                Broker broker = new Broker(findFreePort(),i);
                 Thread t = new Thread(broker);
                 t.start();
             }
 
-            //Broker1 broker1 = new Broker1(8080,1);
-            //Broker1 broker2 = new Broker1(8083,2);
+            //com.example.bustracker_app.Broker broker1 = new com.example.bustracker_app.Broker(8080,1);
+            //com.example.bustracker_app.Broker broker2 = new com.example.bustracker_app.Broker(8083,2);
 
 
             //Thread t1 = new Thread(broker1);
@@ -51,16 +54,16 @@ public class Broker1 extends Node implements Runnable,Serializable {
 
 
 
-    public Broker1(){}
+    public Broker(){}
 
-    public Broker1(int port, int brokerID){
+    public Broker(int port, int brokerID){
         this.port=port;
         this.brokerID=brokerID;
     }
 
 
     /*
-    * Initializes each Broker1.
+    * Initializes each com.example.bustracker_app.Broker.
     * It also takes the number of Brokers (it can be replaced with a global counter* but its working ;) )
     * For each new connection, a new Thread (ClientHandler) is created in order to serve each Client
     *
@@ -73,7 +76,7 @@ public class Broker1 extends Node implements Runnable,Serializable {
             brokerIsRunning=true;
             DatagramSocket socket = new DatagramSocket();
             IPv4=MACHINE_IP;
-            System.out.println("Broker1"+this.getBrokerID()+":"+ this.getIPv4() +":"+serverPort+" is listening...");
+            System.out.println("Broker"+this.getBrokerID()+":"+ this.getIPv4() +":"+serverPort+" is listening...");
             //Adds broker to brokers List
             local_brokers.put(this.getBrokerID(),this);
             flagForBrokers++;
@@ -84,7 +87,7 @@ public class Broker1 extends Node implements Runnable,Serializable {
             }
             while (brokerIsRunning) {
                 clientSocket = brokerSocket.accept();
-                System.out.println("Broker1"+this.getBrokerID()+": "+this.getIPv4()+":"+this.getPort()+"---> New client request received : " + clientSocket);
+                System.out.println("Broker"+this.getBrokerID()+": "+this.getIPv4()+":"+this.getPort()+"---> New client request received : " + clientSocket);
 
                 ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
                 ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
@@ -139,22 +142,22 @@ public class Broker1 extends Node implements Runnable,Serializable {
 
 
     /*
-    * Thread that executes on every new connection on the Broker1
+    * Thread that executes on every new connection on the Broker
     * It's responsible to keep the connection with the Subscribers and the Publishers (it receives a Value Object) until they finish
     * It also handles force-stops of each connection -> EOFExceptions
     * */
     private static class ClientHandler  implements Runnable {
         private Socket clientSocket;
-        private Broker1 parentBroker;
+        private Broker parentBroker;
         private ObjectOutputStream out;
         private ObjectInputStream in;
-        private Subscriber myClientSubscriber=null; //Stores a Subscriber object in order the ClientHandler to be able to handle the connections
-        private Value myClientValue=null; //Stores a Value object in order the ClientHandler to be able to handle the connections
+        private Subscriber myClientSubscriber=null; //Stores a com.example.bustracker_app.Subscriber object in order the ClientHandler to be able to handle the connections
+        private Value myClientValue=null; //Stores a com.example.bustracker_app.Value object in order the ClientHandler to be able to handle the connections
         private static int GlobalID;
         private int ClientID;
         private boolean clientHandlerIsRunning =false; //flag that indicates if a handler for each connection is running or not
 
-        public ClientHandler(Socket socket, Broker1 parentBroker, ObjectInputStream in, ObjectOutputStream out) {
+        public ClientHandler(Socket socket, Broker parentBroker, ObjectInputStream in, ObjectOutputStream out) {
             this.clientSocket = socket;
             this.parentBroker = parentBroker;
             this.in=in;
@@ -171,17 +174,17 @@ public class Broker1 extends Node implements Runnable,Serializable {
                     if (recievedObject instanceof Subscriber) {
                         myClientSubscriber= (Subscriber) recievedObject;
                         parentBroker.getRegisteredSubscribers().put(this.ClientID,this);
-                        System.out.println("Broker1"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A new subscriber (#"+this.ClientID+") with topic("+  myClientSubscriber.getPreferedTopic().getBusLine()+") added to list");
+                        System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A new subscriber (#"+this.ClientID+") with topic("+  myClientSubscriber.getPreferedTopic().getBusLine()+") added to list");
                     }else if (recievedObject instanceof Value){
                         myClientValue = (Value) recievedObject;
                         if (!checkIfExistsInPubs(this.ClientID)){
                             parentBroker.getRegisteredPublishers().put(this.ClientID,this);
-                            System.out.println("Broker1"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A new publisher (#"+this.ClientID+") with vechicleID("+myClientValue.getBus().getVechicleId() +") and topic("+  myClientValue.getBus().getBusLineId()+") added to list");
+                            System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A new publisher (#"+this.ClientID+") with vechicleID("+myClientValue.getBus().getVechicleId() +") and topic("+  myClientValue.getBus().getBusLineId()+") added to list");
                         }
                         pull(myClientValue);
                     }else if(recievedObject==null){
                         //If pubslisher stops transmiting sends a null object
-                        System.out.println("Broker1"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A publisher (#"+this.ClientID+") with vechicleID("+myClientValue.getBus().getVechicleId() +") and topic("+  myClientValue.getBus().getBusLineId()+") stopped transmitting and removed from list");
+                        System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A publisher (#"+this.ClientID+") with vechicleID("+myClientValue.getBus().getVechicleId() +") and topic("+  myClientValue.getBus().getBusLineId()+") stopped transmitting and removed from list");
                         clientHandlerIsRunning=false;
                         pull(myClientValue,"sendStop");
                     }
@@ -191,7 +194,7 @@ public class Broker1 extends Node implements Runnable,Serializable {
                     if (this.myClientSubscriber!=null){
                         for (Integer brokerid : parentBroker.getRegisteredSubscribers().keySet()) {
                             if (parentBroker.getRegisteredSubscribers().get(brokerid).ClientID==this.ClientID){
-                                System.out.println("Broker1"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A subscriber (#"+this.ClientID+") with topic("+parentBroker.getRegisteredSubscribers().get(brokerid).myClientSubscriber.getPreferedTopic().getBusLine()+") disconnected and removed from list");
+                                System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A subscriber (#"+this.ClientID+") with topic("+parentBroker.getRegisteredSubscribers().get(brokerid).myClientSubscriber.getPreferedTopic().getBusLine()+") disconnected and removed from list");
                                 parentBroker.getRegisteredSubscribers().remove(brokerid);
                                 clientHandlerIsRunning=false;
                                 break;
@@ -201,7 +204,7 @@ public class Broker1 extends Node implements Runnable,Serializable {
                     else if (this.myClientValue!=null){
                         for (Integer id : parentBroker.getRegisteredPublishers().keySet()) {
                             if (parentBroker.getRegisteredPublishers().get(id).ClientID==this.ClientID){
-                                System.out.println("Broker1"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A publisher (#"+this.ClientID+") with vechicleID("+myClientValue.getBus().getVechicleId() +") and topic("+  myClientValue.getBus().getBusLineId()+") disconnected and removed from list");
+                                System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A publisher (#"+this.ClientID+") with vechicleID("+myClientValue.getBus().getVechicleId() +") and topic("+  myClientValue.getBus().getBusLineId()+") disconnected and removed from list");
                                 pull(myClientValue,"");
                                 clientHandlerIsRunning=false;
                                 break;
