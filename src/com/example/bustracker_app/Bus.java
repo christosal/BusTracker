@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class Bus implements Serializable {
     private String lineNumber,routeCode,vechicleId,busLineId;
+    public static final long serialVersionUID = 22149313046710534L;
 
     public Bus(String lineNumber, String routeCode, String vechicleId, String busLineId) {
         this.lineNumber = lineNumber;

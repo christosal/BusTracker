@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class Value implements Serializable {
     private Bus bus;
     private double latitude,longitude;
+    public static final long serialVersionUID = 22149313046710534L;
 
     public Value(Bus bus, double latitude, double longitude) {
         this.bus = bus;
