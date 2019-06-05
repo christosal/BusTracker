@@ -15,6 +15,7 @@ public class Broker extends Node implements Runnable,Serializable {
     private ArrayList<Topic> ResponsibilityLines = new ArrayList<>();
     public static final long serialVersionUID = 22149313046710534L;
 
+
     public static void main(String args[]) {
 
         setLocalIP();
@@ -181,12 +182,12 @@ public class Broker extends Node implements Runnable,Serializable {
                             parentBroker.getRegisteredPublishers().put(this.ClientID,this);
                             System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A new publisher (#"+this.ClientID+") with vechicleID("+myClientValue.getBus().getVechicleId() +") and topic("+  myClientValue.getBus().getBusLineId()+") added to list");
                         }
-                        pull(myClientValue);
+                        pull(myClientValue,parentBroker);
                     }else if(recievedObject==null){
                         //If pubslisher stops transmiting sends a null object
                         System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A publisher (#"+this.ClientID+") with vechicleID("+myClientValue.getBus().getVechicleId() +") and topic("+  myClientValue.getBus().getBusLineId()+") stopped transmitting and removed from list");
                         clientHandlerIsRunning=false;
-                        pull(myClientValue,"sendStop");
+                        pull(myClientValue,parentBroker,"sendStop");
                     }
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
@@ -205,7 +206,7 @@ public class Broker extends Node implements Runnable,Serializable {
                         for (Integer id : parentBroker.getRegisteredPublishers().keySet()) {
                             if (parentBroker.getRegisteredPublishers().get(id).ClientID==this.ClientID){
                                 System.out.println("Broker"+parentBroker.getBrokerID()+": "+parentBroker.getIPv4()+":"+parentBroker.getPort()+"---> A publisher (#"+this.ClientID+") with vechicleID("+myClientValue.getBus().getVechicleId() +") and topic("+  myClientValue.getBus().getBusLineId()+") disconnected and removed from list");
-                                pull(myClientValue,"");
+                                pull(myClientValue,parentBroker,"");
                                 clientHandlerIsRunning=false;
                                 break;
                             }
@@ -227,36 +228,9 @@ public class Broker extends Node implements Runnable,Serializable {
 
         }
 
-        /*
-        * Is responsible to forward to all subscribers values for the topic they are registered for
-        *
-        * */
-        private synchronized void pull(Value value){
-            for (Integer id:parentBroker.getRegisteredSubscribers().keySet()){
-                if (value.getBus().getBusLineId().equals(parentBroker.getRegisteredSubscribers().get(id).myClientSubscriber.getPreferedTopic().getBusLine())){
-                    try{
-                        parentBroker.getRegisteredSubscribers().get(id).out.writeObject(value);
-                        parentBroker.getRegisteredSubscribers().get(id).out.flush();
-                    }catch (IOException e){
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
 
-        private synchronized void pull(Value value,String message){
-            for (Integer id:parentBroker.getRegisteredSubscribers().keySet()){
-                if (value.getBus().getBusLineId().equals(parentBroker.getRegisteredSubscribers().get(id).myClientSubscriber.getPreferedTopic().getBusLine())){
-                    try{
-                        parentBroker.getRegisteredSubscribers().get(id).out.writeObject("Stopped");
-                        parentBroker.getRegisteredSubscribers().get(id).out.flush();
-                    }catch (IOException e){
-                        e.printStackTrace();
-                    }
-                }
-            }
-            parentBroker.getRegisteredPublishers().remove(this.ClientID);
-        }
+
+
 
         private boolean checkIfExistsInPubs(int id){
             for (Integer pubID:parentBroker.getRegisteredPublishers().keySet()){
@@ -266,6 +240,39 @@ public class Broker extends Node implements Runnable,Serializable {
             }
             return false;
         }
+    }
+
+
+    /*
+     * Is responsible to forward to all subscribers values for the topic they are registered for
+     *
+     * */
+    private static synchronized void pull(Value value,Broker parentBroker){
+        for (Integer id:parentBroker.getRegisteredSubscribers().keySet()){
+            if (value.getBus().getBusLineId().equals(parentBroker.getRegisteredSubscribers().get(id).myClientSubscriber.getPreferedTopic().getBusLine())){
+                try{
+                    parentBroker.getRegisteredSubscribers().get(id).out.writeObject(value);
+                    parentBroker.getRegisteredSubscribers().get(id).out.flush();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static synchronized void pull(Value value,Broker parentBroker,String message){
+        for (Integer id:parentBroker.getRegisteredSubscribers().keySet()){
+            if (value.getBus().getBusLineId().equals(parentBroker.getRegisteredSubscribers().get(id).myClientSubscriber.getPreferedTopic().getBusLine())){
+                try{
+                    parentBroker.getRegisteredSubscribers().get(id).out.writeObject("Stopped");
+                    parentBroker.getRegisteredSubscribers().get(id).out.flush();
+                    parentBroker.getRegisteredSubscribers().get(id).out.reset();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+       // parentBroker.getRegisteredPublishers().remove(parentBroker.ClientID);
     }
 
 
